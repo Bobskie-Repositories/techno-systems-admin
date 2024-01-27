@@ -58,25 +58,12 @@ const ProjectContents = (props) => {
   return (
     <div className="px-5">
       <div className={styles.container}>
-        {project && user.role === 2 && createAction ? (
-          <BoardCreation
-            selected={props.selected}
-            setCreateAction={setCreateAction}
-            boardTemplateIds={boardTemplateIds}
-            allTemplate={allTemplate}
-          />
-        ) : (
-          <BoardContainer
-            selected={props.selected}
-            setSelected={props.setSelected}
-            project={project.project}
-            onProjectUpdate={onProjectUpdate}
-            setBoardTemplateIds={setBoardTemplateIds}
-            setCreateAction={setCreateAction}
-            isClass={props.isClass}
-            isTeacherSearch={props.isTeacherSearch}
-          />
-        )}
+        <BoardContainer
+          selected={props.selected}
+          setSelected={props.setSelected}
+          project={project.project}
+        />
+
         {project && (
           <ProjectDetails
             project={project.project}

@@ -9,148 +9,9 @@ import styles from './ProjectDetails.module.css';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { useClassMemberTeam, useProjects } from '../../../../hooks';
 
-const ProjectDetails = ({ project, numTemplates, onProjectUpdate, team_name, isClass }) => {
+const ProjectDetails = ({ project, numTemplates, team_name }) => {
   const { accessToken } = useAuth();
   const user = jwtDecode(accessToken);
-
-  // temporary container
-  let officialTeam = null;
-  let teamId = 0;
-
-  // checking if this component is intended for class or not
-  // this is due to the nature of the data. useOutletContext is from Classroom layout
-  // but this component can be used outside the classroom layout so we have to check
-  if (!isClass) {
-    const { classId, classMember } = useOutletContext();
-    const { team } = useClassMemberTeam(classId, classMember?.id);
-
-    // team can be null for the meantime due to it being async
-    if (team) {
-      officialTeam = team;
-      teamId = officialTeam ? officialTeam.id : 0;
-    }
-  }
-
-  const { updateProjects } = useProjects();
-
-  // const [group, setGroup] = useState('');
-  const [modalContent, setModalContent] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
-
-  // eslint-disable-next-line no-use-before-define
-  const updateProjectDetails = async (newName, newDesc) => {
-    const wordsArray = newDesc.split(/\s+/);
-    const numberOfWords = wordsArray.length;
-    if (numberOfWords <= 50 && numberOfWords >= 10) {
-      try {
-        await updateProjects(project.id, {
-          body: {
-            name: newName,
-            description: newDesc,
-            team_id: project.team_id,
-          },
-        });
-        Swal.fire({
-          title: 'Project Updated',
-          icon: 'success',
-          confirmButtonColor: '#9c7b16',
-        });
-        onProjectUpdate();
-      } catch (error) {
-        Swal.fire('Error', 'Update Error.', 'error');
-      }
-      handleCloseModal();
-    } else {
-      handleCloseModal();
-      Swal.fire({
-        title: 'Error',
-        text: `Description should have 10 - 50 words. You have ${numberOfWords} words.`,
-        icon: 'error',
-        showConfirmButton: true,
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // eslint-disable-next-line no-use-before-define
-          handleEditDetailModal(newName, newDesc);
-        }
-      });
-    }
-  };
-
-  // eslint-disable-next-line no-use-before-define
-  const handleEditDetailModal = (projname, desc) => {
-    Swal.fire({
-      html: `
-      <label style="font-size: 14px; font-weight: 400; ">Project Name:</label>
-        <input type="text" id="input1" value="${
-          projname ?? project.name
-        }" placeholder="Enter new project name" class="swal2-input" style="height: 35px; width: 86%; font-size: 16px; font-family: 'Calibri', sans-serif; display: flex;"/>
-        <br>
-        <label style="font-size: 14px; font-weight: 400; ">Description:</label>
-        <textarea id="input2" placeholder="Enter project description" class="swal2-textarea" style="margin: 0 auto; width: 86%; height: 100px; resize: none; font-size: 16px; font-family: 'Calibri', sans-serif;" >${
-          desc ?? project.description
-        }</textarea>
-        <div id="charCount" style="text-align: right; color: #555; font-size: 12px; margin-top: 5px;">0/200 characters</div>
-      `,
-      showCancelButton: true,
-      confirmButtonText: 'Update',
-      confirmButtonColor: '#9c7b16',
-      cancelButtonText: 'Close',
-      cancelButtonColor: 'rgb(181, 178, 178)',
-      didOpen: () => {
-        const input2 = document.getElementById('input2');
-        const charCount = document.getElementById('charCount');
-
-        const updateCharCount = () => {
-          const currentLength = input2.value.length;
-          charCount.innerText = `${currentLength}/200 characters`;
-
-          if (currentLength > 200) {
-            input2.value = input2.value.slice(0, 200);
-          }
-        };
-
-        updateCharCount();
-
-        input2.addEventListener('input', updateCharCount);
-      },
-      preConfirm: async () => {
-        const input1Value = document.getElementById('input1').value;
-        const input2Value = document.getElementById('input2').value;
-        try {
-          if (!input1Value) {
-            throw new Error('Project name cannot be empty');
-          } else if (!input2Value) {
-            throw new Error('Please enter the project description.');
-          }
-          return true;
-        } catch (error) {
-          Swal.showValidationMessage(
-            `Project with the name '${input1Value}' already exists. Please enter another project name.`
-          );
-          return false;
-        }
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        const input1Value = document.getElementById('input1').value;
-        const input2Value = document.getElementById('input2').value;
-        updateProjectDetails(input1Value, input2Value);
-        Swal.fire({
-          title: 'Project Updated',
-          icon: 'success',
-          confirmButtonColor: '#9c7b16',
-        });
-      }
-    });
-  };
-
-  // if (!team && !isClass) {
-  //   return <Loading />;
-  // }
 
   return (
     <div className={styles.side}>
@@ -161,30 +22,15 @@ const ProjectDetails = ({ project, numTemplates, onProjectUpdate, team_name, isC
 
       <hr />
       <div style={{ margin: '15px 0' }}>
-        <p className={styles.title}>
-          Project Details &nbsp;
-          {user.role === 2 && project.team_id === teamId && (
-            <span className={styles.pen} onClick={() => handleEditDetailModal()}>
-              <FaPen />
-            </span>
-          )}
-          {isModalOpen && (
-            <ModalCustom width={500} isOpen={isModalOpen} onClose={handleCloseModal}>
-              {modalContent}
-            </ModalCustom>
-          )}
-        </p>
+        <p className={styles.title}>Project Details</p>
         <p className={styles.title_body}>Name:</p>
         <p className={styles.bodyName}>{project.name}</p>
         <p className={styles.title_body}>Description:</p>
         <p className={styles.body}>{project.description}</p>
       </div>
-      {(user.role === 1 || project.team_id !== teamId) && (
-        <>
-          <hr style={{ color: '#E5E4E2' }} />
-          <p className={styles.title_body}>Created by: Group {team_name}</p>
-        </>
-      )}
+
+      <hr style={{ color: '#E5E4E2' }} />
+      <p className={styles.title_body}>Created by: Group {team_name}</p>
     </div>
   );
 };

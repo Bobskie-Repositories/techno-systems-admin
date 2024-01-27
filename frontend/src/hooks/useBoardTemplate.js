@@ -20,7 +20,37 @@ const useBoardTemplate = () => {
     }
   };
 
-  return { getAllTemplate, getTemplate };
+  const createTemplate = async ({ body }) => {
+    try {
+      const res = await SpringBoardService.createTemplate(body);
+      return true;
+    } catch (error) {
+      console.error('API Error:', error);
+      return false;
+    }
+  };
+
+  const updateTemplate = async (templateId, { body }) => {
+    try {
+      const res = await SpringBoardService.updateTemplate(templateId, body);
+      return true;
+    } catch (error) {
+      console.error('API Error:', error);
+      return false;
+    }
+  };
+
+  const deleteTemplate = async (templateId) => {
+    try {
+      const res = await SpringBoardService.deleteTemplate(templateId);
+      return true;
+    } catch (error) {
+      console.error('API Error:', error);
+      return false;
+    }
+  };
+
+  return { getAllTemplate, getTemplate, createTemplate, updateTemplate, deleteTemplate };
 };
 
 export default useBoardTemplate;

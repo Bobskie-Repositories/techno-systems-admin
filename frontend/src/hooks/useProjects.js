@@ -118,6 +118,16 @@ const useProjects = () => {
     }
   };
 
+  const getAllClass = async () => {
+    try {
+      const res = await SpringBoardService.allClasses();
+      return res;
+    } catch (error) {
+      console.error('API Error:', error);
+      return false;
+    }
+  };
+
   return {
     allclassteamproj,
     getProjectsByClassId,
@@ -131,6 +141,7 @@ const useProjects = () => {
     getProjectBoardById,
     updateProjectBoard,
     getVersionProjectBoards,
+    getAllClass,
   };
 };
 

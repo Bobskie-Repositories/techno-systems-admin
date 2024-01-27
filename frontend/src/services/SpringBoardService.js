@@ -28,6 +28,7 @@ const SpringBoardService = {
   createTemplate: (data) => api.post('/template/add', data),
   updateTemplate: (tempId, data) => api.patch(`/template/${tempId}/update`, data),
   deleteTemplate: (tempId) => api.delete(`/template/${tempId}/delete`),
+  allClasses: () => api.get(`/all_classes`),
 };
 
 export default SpringBoardService;

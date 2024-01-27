@@ -13,15 +13,15 @@ function SearchProject() {
   const { accessToken } = useAuth();
   const user = jwtDecode(accessToken);
 
-  const { projId } = useParams();
+  const { teamId, projId } = useParams();
   const [disable, setDisable] = useState(false);
   const navigate = useNavigate();
   const isClass = user.role === 1;
   const isTeacherSearch = user.role === 1;
 
   let buttons;
-  if (user?.role === GLOBALS.USER_ROLE.MODERATOR) {
-    buttons = GLOBALS.SIDENAV_MODERATOR;
+  if (user?.role === GLOBALS.USER_ROLE.ADMIN) {
+    buttons = GLOBALS.SIDENAV_ADMIN;
   } else {
     buttons = GLOBALS.SIDENAV_DEFAULT;
   }
@@ -32,18 +32,18 @@ function SearchProject() {
   };
 
   const searchContent = () => (
-    <div className="px-5 d-flex justify-content-start">
-      {!disable && (
-        <span style={{ cursor: 'pointer' }} onClick={goBack}>
-          <IoArrowBackSharp />
-        </span>
-      )}
-      <ProjectContents
-        isTeacherSearch={isTeacherSearch}
-        setDisable={setDisable}
-        selected={projId}
-        isClass={isClass}
-      />
+    <div className="d-flex">
+      <Sidebar name={`${user?.first_name} ${user?.last_name}`} sidebarItems={buttons} />
+      <div className="container-fluid d-flex flex-column">
+        <Header />
+        <div className="px-5 d-flex justify-content-start">
+          <span style={{ cursor: 'pointer' }} onClick={goBack}>
+            <IoArrowBackSharp />
+          </span>
+
+          <ProjectContents selected={projId} />
+        </div>
+      </div>
     </div>
   );
 

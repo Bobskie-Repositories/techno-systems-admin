@@ -37,6 +37,8 @@ urlpatterns += [
         path('refresh', TokenRefreshView.as_view(), name='refresh_token'),
         path('verify', TokenVerifyView.as_view(), name='verify_token'),
     ])),
+    
+    path('spring/all_classes', GetAllClassrooms.as_view()),
     path('spring/class_team_proj', GetAllClassroomTeamAndProjects.as_view()),
     path('spring/class/<int:class_id>/team_proj',GetTeamsAndProjectsByClassId.as_view()),
     path('spring/team/<int:team_id>/projects', GetProjectsByTeamId.as_view()),

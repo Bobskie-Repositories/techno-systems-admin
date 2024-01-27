@@ -5,8 +5,8 @@ from django.http import HttpResponse
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
-from api.serializers import SpringProjectBoardSerializer, SpringProjectSerializer
-from api.models import SpringProject, SpringProjectBoard, SpringBoardTemplate, Team, TeamMember
+from api.serializers import SpringProjectBoardSerializer, SpringProjectSerializer, ClassRoomSerializer
+from api.models import ClassRoom, SpringProject, SpringProjectBoard, SpringBoardTemplate, Team, TeamMember
 from django.db.models import Max
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
@@ -122,6 +122,7 @@ class GetAllClassroomTeamAndProjects(APIView):
 
                 for team in teams:
                     team_name = team.name
+                    team_id = team.id
 
                     projects_data = []
                     projects = SpringProject.objects.filter(team_id=team.id)
@@ -162,6 +163,7 @@ class GetAllClassroomTeamAndProjects(APIView):
                             "course_name": classroom.course_name,
                             "sections": classroom.sections,
                             "teacher_info": teacher_info,
+                            'team_id': team_id,
                             "team_name": team_name,
                             "projects": [project_data]
                         }
@@ -174,6 +176,7 @@ class GetAllClassroomTeamAndProjects(APIView):
                             "course_name": classroom.course_name,
                             "sections": classroom.sections,
                             "teacher_info": teacher_info,
+                            'team_id': team_id,
                             "team_name": team_name,
                             "projects": []
                         }
@@ -256,3 +259,10 @@ class GetTeamsAndProjectsByClassId(APIView):
 
         except ClassRoom.DoesNotExist:
             return Response({"error": "Classroom not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class GetAllClassrooms(APIView):
+    def get(self, request):
+        classrooms = ClassRoom.objects.all()
+        serializer = ClassRoomSerializer(classrooms, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

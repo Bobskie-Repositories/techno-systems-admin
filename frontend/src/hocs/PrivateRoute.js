@@ -10,13 +10,8 @@ export function PrivateRoute({ forUserType, children }) {
     return <Navigate to="/login" />;
   }
 
-  if (
-    refreshToken &&
-    (forUserType === GLOBALS.USER_ROLE.ADMIN ||
-      forUserType === GLOBALS.USER_ROLE.MODERATOR ||
-      forUserType === GLOBALS.USER_ROLE.BASIC)
-  ) {
-    return <Navigate to="/classes" />;
+  if (refreshToken && forUserType === GLOBALS.USER_ROLE.ADMIN) {
+    return <Navigate to="/admin/allprojects" />;
   }
 
   return [children];

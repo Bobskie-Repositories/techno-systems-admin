@@ -358,9 +358,13 @@ function AdminTable(props) {
               <div
                 className={`${styles.adminContainer} ${styles.conHover}`}
                 style={{
-                  gridTemplateColumns: `repeat(${3}, 11rem) 20rem 11rem repeat(${
-                    templates.length
-                  }, 11rem) 11rem ${!props.isActive && '11rem'} 11rem`,
+                  gridTemplateColumns: props.isActive
+                    ? `repeat(${3}, 11rem) 20rem 11rem repeat(${
+                        templates.length
+                      }, 11rem) 11rem  11rem`
+                    : `repeat(${3}, 11rem) 20rem 11rem repeat(${
+                        templates.length
+                      }, 11rem) 11rem 11rem 11rem`,
                   gridColumnGap: '5px',
                   borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
                 }}

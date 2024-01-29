@@ -97,9 +97,9 @@ function CreateTemplate() {
 
   const submitTemplate = async () => {
     try {
-      if (title === 'Unknown') {
+      if (title === 'Enter title') {
         Swal.fire({
-          title: 'Title: Unknown. Please enter a correct title.',
+          title: 'Please enter a correct title.',
           icon: 'error',
           confirmButtonColor: '#9c7b16',
         });
@@ -142,6 +142,10 @@ function CreateTemplate() {
             icon: 'success',
             confirmButtonColor: '#9c7b16',
           });
+          sessionStorage.removeItem('title');
+          sessionStorage.removeItem('description');
+          sessionStorage.removeItem('rulesContent');
+          sessionStorage.removeItem('templateContent');
 
           navigate(`/admin/templates`);
         } else {

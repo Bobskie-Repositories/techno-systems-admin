@@ -55,25 +55,36 @@ function AdminTable(props) {
       const result = fuse.search(text);
       const sortedResults = result.map((item) => item.item).sort((a, b) => b.score - a.score); // Sort in descending order based on score
       setFilteredSearchTeam(sortedResults);
-    } else {
-      setFilteredSearchTeam(teams);
+      return sortedResults;
     }
+
+    setFilteredSearchTeam(teams);
+    return teams;
   };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const searchParams = new URLSearchParams(location.search);
+        const searchValue = searchParams.get('search') || '';
+        let tempProjects = props.allProjects;
+        setSearchText(searchValue);
+        if (searchValue) {
+          tempProjects = handleSearch(searchValue);
+        } else {
+          searchParams.set('search', searchText);
+        }
         const filteredAndClassroomGroups =
           props.filter.length > 0
-            ? props.allProjects.filter((team) => props.filter.includes(team.classroom_id))
-            : props.allProjects;
+            ? tempProjects.filter((team) => props.filter.includes(team.classroom_id))
+            : tempProjects;
 
         const filteredTeams = filteredAndClassroomGroups.filter((team) =>
           team.projects.length > 0 ? team.projects[0].project_is_active === props.isActive : false
         );
 
         const filteredGroupsByDate =
-          props.dateRange.length > 0
+          props.dateRange !== null && props.dateRange.length > 0
             ? filteredTeams.filter((group) => {
                 const createdAt =
                   group.projects.length > 0
@@ -86,14 +97,7 @@ function AdminTable(props) {
             : filteredTeams;
         setTeams(filteredGroupsByDate);
         setFilteredSearchTeam(filteredGroupsByDate);
-        const searchParams = new URLSearchParams(location.search);
-        const searchValue = searchParams.get('search') || '';
-        setSearchText(searchValue);
-        if (searchValue) {
-          handleSearch(searchValue);
-        } else {
-          searchParams.set('search', searchText);
-        }
+
         setSharedState(-1);
         activate(-1);
       } catch (error) {
@@ -165,26 +169,26 @@ function AdminTable(props) {
   };
 
   const handleTemplateSort = (templateId) => {
-    setSharedState(templateId + 4);
-    activate(templateId + 4);
-    if (templateId !== sharedState - 4) {
+    setSharedState(templateId + 5);
+    activate(templateId + 5);
+    if (templateId !== sharedState - 5) {
       setTemplateSort(true);
     }
 
-    const sortedGroups = [...filteredSearchTeam].sort((a, b) => {
+    const sortedTeams = [...filteredSearchTeam].sort((a, b) => {
       const aBoard =
         a.projects.length > 0
-          ? a.projects[0].project_boards.find((board) => board.templateId === templateId)
+          ? a.projects[0].project_boards.find((board) => board.template_id === templateId)
           : null;
       const bBoard =
         b.projects.length > 0
-          ? b.projects[0].project_boards.find((board) => board.templateId === templateId)
+          ? b.projects[0].project_boards.find((board) => board.template_id === templateId)
           : null;
       const aScore = aBoard ? aBoard.board_score : 0;
       const bScore = bBoard ? bBoard.board_score : 0;
       return !templateSort ? aScore - bScore : bScore - aScore;
     });
-    setTeams(sortedGroups);
+    setFilteredSearchTeam(sortedTeams);
     setTemplateSort(!templateSort);
     setTemplateSortOrder({
       ...templateSortOrder,
@@ -279,6 +283,10 @@ function AdminTable(props) {
               const searchedText = event.target.value;
               if (searchText.length > 0 && searchedText === '') {
                 handleSearch(searchedText);
+                const searchParams = new URLSearchParams();
+                searchParams.set('search', searchedText);
+                // Navigate to the updated URL
+                navigate(`${location.pathname}?${searchParams.toString()}`);
               }
               setSearchText(searchedText);
             }}
@@ -354,72 +362,78 @@ function AdminTable(props) {
             </span>
           </div>
           <div className={styles.yScroll}>
-            {teamsToDisplay.map((team, index) => (
-              <div
-                className={`${styles.adminContainer} ${styles.conHover}`}
-                style={{
-                  gridTemplateColumns: props.isActive
-                    ? `repeat(${3}, 11rem) 20rem 11rem repeat(${
-                        templates.length
-                      }, 11rem) 11rem  11rem`
-                    : `repeat(${3}, 11rem) 20rem 11rem repeat(${
-                        templates.length
-                      }, 11rem) 11rem 11rem 11rem`,
-                  gridColumnGap: '5px',
-                  borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
-                }}
-                key={index}
-              >
-                <span
-                  className={styles.centerText}
-                >{`${team.course_name} - ${team.sections}`}</span>
-
-                <span className={styles.centerText}>{team.team_name}</span>
-
-                {team.projects.length > 0 ? (
+            {teamsToDisplay.length > 0 ? (
+              teamsToDisplay.map((team, index) => (
+                <div
+                  className={`${styles.adminContainer} ${styles.conHover}`}
+                  style={{
+                    gridTemplateColumns: props.isActive
+                      ? `repeat(${3}, 11rem) 20rem 11rem repeat(${
+                          templates.length
+                        }, 11rem) 11rem  11rem`
+                      : `repeat(${3}, 11rem) 20rem 11rem repeat(${
+                          templates.length
+                        }, 11rem) 11rem 11rem 11rem`,
+                    gridColumnGap: '5px',
+                    borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
+                  }}
+                  key={index}
+                >
                   <span
-                    className={styles.centerTextName}
-                    onClick={() => onClickNavigation(team.team_id, team.projects[0].project_id)}
-                  >
-                    {team.projects[0].project_name}
-                  </span>
-                ) : (
-                  <span className={styles.centerText}>No Project </span>
-                )}
-                <span className={styles.centerText}>{team.projects[0].project_description}</span>
+                    className={styles.centerText}
+                  >{`${team.course_name} - ${team.sections}`}</span>
 
-                <span className={styles.centerText} style={{ color: 'red' }}>
-                  {team.projects.length > 0
-                    ? `${Math.round((team.projects[0].project_score / templates.length) * 10)}%`
-                    : '0%'}
-                </span>
-                {templates.map((template, ind) => {
-                  const projectBoard =
-                    team.projects.length > 0
-                      ? team.projects[0].project_boards.find(
-                          (board) => board.template_id === template.id
-                        )
-                      : null;
-                  return (
-                    <span key={ind} className={styles.centerText}>
-                      {projectBoard ? `${Math.round(projectBoard.board_score * 10)}%` : '0%'}
-                    </span>
-                  );
-                })}
-                {!props.isActive && (
-                  <span className={styles.centerText}>{team.projects[0].project_reason}</span>
-                )}
+                  <span className={styles.centerText}>{team.team_name}</span>
 
-                <span className={styles.centerText}>{team.teacher_info}</span>
-                <span className={styles.centerText}>
                   {team.projects.length > 0 ? (
-                    time(team.projects[0].project_date_created)
+                    <span
+                      className={styles.centerTextName}
+                      onClick={() => onClickNavigation(team.team_id, team.projects[0].project_id)}
+                    >
+                      {team.projects[0].project_name}
+                    </span>
                   ) : (
-                    <span>---</span>
+                    <span className={styles.centerText}>No Project </span>
                   )}
-                </span>
+                  <span className={styles.centerText}>{team.projects[0].project_description}</span>
+
+                  <span className={styles.centerText} style={{ color: 'red' }}>
+                    {team.projects.length > 0
+                      ? `${Math.round((team.projects[0].project_score / templates.length) * 10)}%`
+                      : '0%'}
+                  </span>
+                  {templates.map((template, ind) => {
+                    const projectBoard =
+                      team.projects.length > 0
+                        ? team.projects[0].project_boards.find(
+                            (board) => board.template_id === template.id
+                          )
+                        : null;
+                    return (
+                      <span key={ind} className={styles.centerText}>
+                        {projectBoard ? `${Math.round(projectBoard.board_score * 10)}%` : '0%'}
+                      </span>
+                    );
+                  })}
+                  {!props.isActive && (
+                    <span className={styles.centerText}>{team.projects[0].project_reason}</span>
+                  )}
+
+                  <span className={styles.centerText}>{team.teacher_info}</span>
+                  <span className={styles.centerText}>
+                    {team.projects.length > 0 ? (
+                      time(team.projects[0].project_date_created)
+                    ) : (
+                      <span>---</span>
+                    )}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className={styles.noTeamMessage}>
+                Sorry! We looked everywhere, but could not find any project.
               </div>
-            ))}
+            )}
           </div>
         </div>
       </Card>

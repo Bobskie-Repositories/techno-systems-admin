@@ -149,7 +149,7 @@ function EditTemplate() {
           },
         });
         Swal.fire({
-          title: 'Template Created',
+          title: 'Template Updated',
           icon: 'success',
           confirmButtonColor: '#9c7b16',
         });

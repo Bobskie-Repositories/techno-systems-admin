@@ -75,31 +75,35 @@ function SpringBoardAdminTemplates() {
               Create Template
             </Button>
           </div>
-          <div className={styles.container_card}>
-            <div className={styles.scrollable}>
-              {!isLoading && templates.length === 0 && (
-                <p className={styles.centeredText}>
-                  It looks like you haven't created any templates yet. <br /> Click on the "Create
-                  Template" button to get started and create your first template.
-                </p>
-              )}
-              {templates.map((template) => (
-                <Card
-                  key={template.id}
-                  className={styles.container_board}
-                  onClick={() => navigate(`template/${template.id}`)}
-                >
-                  <div className={styles.words}>
-                    <h3>{template.title}</h3>
-                    <p>{template.description}</p>
-                  </div>
+          <div className="px-5">
+            <Card className={styles.subcontainer_card}>
+              <div className={styles.scrollable}>
+                {!isLoading && templates.length === 0 && (
+                  <p className={styles.centeredText}>
+                    It looks like you haven't created any templates yet. <br /> Click on the "Create
+                    Template" button to get started and create your first template.
+                  </p>
+                )}
+                {templates.map((template) => (
+                  <Card
+                    key={template.id}
+                    className={styles.container_board}
+                    onClick={() => navigate(`template/${template.id}`)}
+                  >
+                    <div className={styles.words}>
+                      <h3>{template.title}</h3>
+                      <p>{template.description}</p>
+                    </div>
 
-                  <div className={styles.date}>
-                    <p>Date Created: {formatDate(template.date_created)}</p>
-                  </div>
-                </Card>
-              ))}
-            </div>
+                    <div className="d-flex align-items-end">
+                      <p style={{ fontSize: '13px' }}>
+                        Date Created: {formatDate(template.date_created)}
+                      </p>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </Card>
           </div>
         </div>
       </div>

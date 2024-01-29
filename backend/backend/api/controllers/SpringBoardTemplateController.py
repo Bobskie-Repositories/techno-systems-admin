@@ -4,7 +4,7 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 from api.serializers import SpringBoardTemplateSerializer
-from api.models import SpringBoardTemplate
+from api.models import SpringBoardTemplate, SpringProjectBoard
 
 
 class CreateTemplate(generics.CreateAPIView):
@@ -55,7 +55,15 @@ class UpdateTemplate(generics.UpdateAPIView):
 
         serializer = SpringBoardTemplateSerializer(template, data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            updated_template = serializer.save()
+
+            # Update all project boards with the same template_id
+            project_boards = SpringProjectBoard.objects.filter(
+                template_id=updated_template.id)
+            for project_board in project_boards:
+                project_board.title = updated_template.title
+                project_board.save()
+
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

@@ -140,25 +140,38 @@ function EditTemplate() {
           confirmButtonColor: '#9c7b16',
         });
       } else {
-        const response = await updateTemplate(id, {
-          body: {
-            title,
-            content: templateContent,
-            rules: rulesContent,
-            description,
-          },
-        });
         Swal.fire({
-          title: 'Template Updated',
-          icon: 'success',
+          icon: 'warning',
+          title:
+            '<span style="font-size: 20px">Are you sure you want to update this template?</span>',
+          showCancelButton: true,
+          cancelButtonText: 'Cancel',
+          cancelButtonColor: 'rgb(181, 178, 178)',
+          confirmButtonText: 'Proceed',
           confirmButtonColor: '#9c7b16',
-        });
-        sessionStorage.removeItem('title');
-        sessionStorage.removeItem('description');
-        sessionStorage.removeItem('rulesContent');
-        sessionStorage.removeItem('templateContent');
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            const response = await updateTemplate(id, {
+              body: {
+                title,
+                content: templateContent,
+                rules: rulesContent,
+                description,
+              },
+            });
+            Swal.fire({
+              title: 'Template Updated',
+              icon: 'success',
+              confirmButtonColor: '#9c7b16',
+            });
+            sessionStorage.removeItem('title');
+            sessionStorage.removeItem('description');
+            sessionStorage.removeItem('rulesContent');
+            sessionStorage.removeItem('templateContent');
 
-        navigate(`/admin/templates`);
+            navigate(`/admin/templates`);
+          }
+        });
       }
     } catch (error) {
       console.error('Error updating Template:', error);

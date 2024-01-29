@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import Loading from '../components/UI/Loading/Loading';
 import Header from '../components/Header/Header';
 import Card from '../components/UI/Card/Card';
 import Button from '../components/UI/Button/Button';
@@ -12,11 +13,13 @@ import styles from './EditTemplate.module.css';
 
 function EditTemplate() {
   const { getTemplate, updateTemplate, deleteTemplate } = useBoardTemplate();
-  const [template, setTemplate] = useState();
-  const [rulesContent, setRulesContent] = useState('');
-  const [templateContent, setTemplateContent] = useState('');
-  const [title, setTitle] = useState('Unknown');
-  const [description, setDescription] = useState(''); // Add description state
+  const [rulesContent, setRulesContent] = useState(sessionStorage.getItem('rulesContent') || '');
+  const [templateContent, setTemplateContent] = useState(
+    sessionStorage.getItem('templateContent') || ''
+  );
+  const [oldTitle, setOldTitle] = useState();
+  const [title, setTitle] = useState(sessionStorage.getItem('title') || '');
+  const [description, setDescription] = useState(sessionStorage.getItem('description') || '');
   const [isTitleEditable, setIsTitleEditable] = useState(false);
   const [isNext, setIsNext] = useState(false);
   const [savedRulesContent, setSavedRulesContent] = useState(''); // Store the rulesContent
@@ -27,11 +30,13 @@ function EditTemplate() {
     const fetchData = async () => {
       try {
         const response = await getTemplate(id);
-        setTemplate(response.data);
-        setTitle(response.data.title);
-        setRulesContent(response.data.rules);
-        setDescription(response.data.description);
-        setTemplateContent(response.data.content);
+        if (!title && !description && !rulesContent && !templateContent) {
+          setTitle(response.data.title);
+          setRulesContent(response.data.rules);
+          setDescription(response.data.description);
+          setTemplateContent(response.data.content);
+        }
+        setOldTitle(response.data.title);
       } catch (error) {
         console.error('Error fetching data:', error);
         navigate(`/admin/templates`);
@@ -39,6 +44,13 @@ function EditTemplate() {
     };
     fetchData();
   }, [id]);
+
+  useEffect(() => {
+    sessionStorage.setItem('title', title);
+    sessionStorage.setItem('description', description);
+    sessionStorage.setItem('rulesContent', rulesContent);
+    sessionStorage.setItem('templateContent', templateContent);
+  }, [title, description, rulesContent, templateContent]);
 
   const handleTitleChange = (e) => {
     const newTitle = e.target.value;
@@ -55,7 +67,20 @@ function EditTemplate() {
   };
 
   const toggleTitleEdit = () => {
-    setIsTitleEditable(!isTitleEditable);
+    if (title.trim() === '') {
+      Swal.fire({
+        icon: 'error',
+        title: 'Title cannot be empty',
+        text: 'Please enter a title or click outside the input to cancel editing.',
+        confirmButtonText: 'OK',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          setTitle(oldTitle);
+        }
+      });
+    } else {
+      setIsTitleEditable(!isTitleEditable);
+    }
   };
 
   const handleTitleKeyDown = (e) => {
@@ -67,10 +92,6 @@ function EditTemplate() {
           title: 'Title cannot be empty',
           text: 'Please enter a title or click outside the input to cancel editing.',
           confirmButtonText: 'OK',
-        }).then((result) => {
-          if (result.isConfirmed) {
-            setTitle('Unknown');
-          }
         });
       } else {
         toggleTitleEdit();
@@ -165,6 +186,10 @@ function EditTemplate() {
   };
 
   const goBack = () => {
+    sessionStorage.removeItem('title');
+    sessionStorage.removeItem('description');
+    sessionStorage.removeItem('rulesContent');
+    sessionStorage.removeItem('templateContent');
     navigate('/admin/templates');
   };
 
@@ -206,13 +231,17 @@ function EditTemplate() {
             <Card className={styles.cardContainer}>
               <div className={styles.box} />
               <div className={styles.containerStyle}>
-                <Tiptap setDescription={setRulesContent} value={rulesContent} />
+                {rulesContent ? (
+                  <Tiptap setDescription={setRulesContent} value={rulesContent} />
+                ) : (
+                  <Loading />
+                )}
               </div>
             </Card>
             <div className={styles.btmButton}>
-              <Button className={styles.buttonR} onClick={showDeleteProjectModal}>
+              {/* <Button className={styles.buttonR} onClick={showDeleteProjectModal}>
                 Delete
-              </Button>
+              </Button> */}
               <Button className={styles.buttonG} onClick={handleNextClick}>
                 Next
               </Button>
@@ -224,13 +253,17 @@ function EditTemplate() {
             <Card className={styles.cardContainer}>
               <div className={styles.box} />
               <div className={styles.containerStyle}>
-                <Tiptap setDescription={setTemplateContent} value={templateContent} />
+                {templateContent ? (
+                  <Tiptap setDescription={setTemplateContent} value={templateContent} />
+                ) : (
+                  <Loading />
+                )}
               </div>
             </Card>
             <div className={styles.btmButton}>
-              <Button className={styles.buttonR} onClick={showDeleteProjectModal}>
+              {/* <Button className={styles.buttonR} onClick={showDeleteProjectModal}>
                 Delete
-              </Button>
+              </Button> */}
               <Button className={styles.buttonG} onClick={handleBackClick}>
                 Back
               </Button>

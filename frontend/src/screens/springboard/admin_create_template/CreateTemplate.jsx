@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -13,14 +13,23 @@ import styles from './CreateTemplate.module.css';
 function CreateTemplate() {
   const { createTemplate } = useBoardTemplate();
 
-  const [rulesContent, setRulesContent] = useState('');
-  const [templateContent, setTemplateContent] = useState('');
-  const [title, setTitle] = useState('Unknown');
-  const [description, setDescription] = useState(''); // Add description state
+  const [rulesContent, setRulesContent] = useState(sessionStorage.getItem('rulesContent') || '');
+  const [templateContent, setTemplateContent] = useState(
+    sessionStorage.getItem('templateContent') || ''
+  );
+  const [title, setTitle] = useState(sessionStorage.getItem('title') || 'Enter title');
+  const [description, setDescription] = useState(sessionStorage.getItem('description') || '');
   const [isTitleEditable, setIsTitleEditable] = useState(false);
   const [isNext, setIsNext] = useState(false);
   const [savedRulesContent, setSavedRulesContent] = useState(''); // Store the rulesContent
   const navigate = useNavigate();
+
+  useEffect(() => {
+    sessionStorage.setItem('title', title);
+    sessionStorage.setItem('description', description);
+    sessionStorage.setItem('rulesContent', rulesContent);
+    sessionStorage.setItem('templateContent', templateContent);
+  }, [title, description, rulesContent, templateContent]);
 
   const handleTitleChange = (e) => {
     const newTitle = e.target.value;
@@ -37,12 +46,24 @@ function CreateTemplate() {
   };
 
   const toggleTitleEdit = () => {
-    setIsTitleEditable(!isTitleEditable);
+    if (title.trim() === '') {
+      Swal.fire({
+        icon: 'error',
+        title: 'Title cannot be empty',
+        text: 'Please enter a title or click outside the input to cancel editing.',
+        confirmButtonText: 'OK',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          setTitle('Enter title');
+        }
+      });
+    } else {
+      setIsTitleEditable(!isTitleEditable);
+    }
   };
 
   const handleTitleKeyDown = (e) => {
     if (e.key === 'Enter') {
-      e.preventDefault();
       if (title.trim() === '') {
         Swal.fire({
           icon: 'error',
@@ -51,7 +72,7 @@ function CreateTemplate() {
           confirmButtonText: 'OK',
         }).then((result) => {
           if (result.isConfirmed) {
-            setTitle('Unknown');
+            setTitle('Enter title');
           }
         });
       } else {
@@ -82,6 +103,12 @@ function CreateTemplate() {
           icon: 'error',
           confirmButtonColor: '#9c7b16',
         });
+      } else if (title === '') {
+        Swal.fire({
+          title: 'Please enter the title.',
+          icon: 'error',
+          confirmButtonColor: '#9c7b16',
+        });
       } else if (description === '') {
         Swal.fire({
           title: 'Please enter the description',
@@ -109,13 +136,21 @@ function CreateTemplate() {
             description,
           },
         });
-        Swal.fire({
-          title: 'Template Created',
-          icon: 'success',
-          confirmButtonColor: '#9c7b16',
-        });
+        if (response) {
+          Swal.fire({
+            title: 'Template Created',
+            icon: 'success',
+            confirmButtonColor: '#9c7b16',
+          });
 
-        navigate(`/admin/templates`);
+          navigate(`/admin/templates`);
+        } else {
+          Swal.fire({
+            title: 'Error: Template name already taken.',
+            icon: 'error',
+            confirmButtonColor: '#9c7b16',
+          });
+        }
       }
     } catch (error) {
       console.error('Error creating Template:', error);
@@ -123,6 +158,10 @@ function CreateTemplate() {
   };
 
   const goBack = () => {
+    sessionStorage.removeItem('title');
+    sessionStorage.removeItem('description');
+    sessionStorage.removeItem('rulesContent');
+    sessionStorage.removeItem('templateContent');
     navigate('/admin/templates');
   };
 

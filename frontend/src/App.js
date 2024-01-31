@@ -9,8 +9,6 @@ import { PrivateRoute } from './hocs/PrivateRoute';
 // Screen Imports
 import Login from './screens/login';
 import Logout from './screens/logout';
-import ForgotPassword from './screens/forgot_password';
-import Signup from './screens/signup';
 
 import SpringBoardAdminAllProjects from './screens/springboard/admin_view_all_projects';
 import SpringBoardAdminTemplates from './screens/springboard/admin_templates';
@@ -42,15 +40,6 @@ function App() {
             </NoAuthRoute>
           }
         />
-        <Route
-          path="/signup"
-          element={
-            <NoAuthRoute>
-              <Signup />
-            </NoAuthRoute>
-          }
-        />
-        <Route path="/forgotpassword" element={<ForgotPassword />} />
         <Route path="/logout" element={<Logout />} />
 
         <Route path="admin/allprojects">

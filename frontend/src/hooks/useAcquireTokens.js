@@ -1,5 +1,5 @@
 import { useState } from 'react';
-
+import jwtDecode from 'jwt-decode';
 import { TokensService } from '../services';
 
 const useAcquireTokens = () => {
@@ -21,6 +21,10 @@ const useAcquireTokens = () => {
       responseCode = res.status;
       accessToken = res.data.access;
       refreshToken = res.data.refresh;
+      const user = jwtDecode(accessToken);
+      if (user.role !== 0) {
+        responseCode = 400;
+      }
     } catch (error) {
       responseCode = error.response.status;
     }

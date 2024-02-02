@@ -6,7 +6,7 @@ export function NoAuthRoute({ children }) {
   const { accessToken } = useAuth();
 
   if (accessToken) {
-    return <Navigate to="/classes" />;
+    return <Navigate to="/admin/allprojects" />;
   }
 
   return children;

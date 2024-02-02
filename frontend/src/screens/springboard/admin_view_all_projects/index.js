@@ -148,7 +148,7 @@ function SpringBoardAdminAllProjects() {
 
               {dropdownVisible && (
                 <div className={styles.dropdowncontent} style={{ minWidth: '12rem' }}>
-                  {!classroom &&
+                  {classroom &&
                     classroom.map((clsrm) => (
                       <div key={clsrm.id} className={styles.classroomItem}>
                         <input
